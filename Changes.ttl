@@ -43,9 +43,8 @@ my:v_0_08
     dcs:changeset [
       dcs:item
         [ rdfs:label "RDF::Helper::Properties used to be RDF::LinkedData::Predicates."@en ; a dcs:Update ] ,
-        [ rdfs:label "Add namespaces method to set a hashref with RDF namespaces."@en ; a dcs:Change ] ,
         [ rdfs:label "Give RDF::LinkedData::Predicates antlers."@en ; a dcs:Change ] ,
-        [ rdfs:label "create a helper_properties method to pass the properties."@en ; a dcs:Change ] 
+        [ rdfs:label "create a helper_properties method to pass the properties."@en ; a dcs:Addition ] 
     ] .
 
 
