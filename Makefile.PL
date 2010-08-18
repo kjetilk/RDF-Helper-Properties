@@ -5,9 +5,19 @@ all_from 'lib/RDF/Helper/Properties.pm';
 author   q{Kjetil Kjernsmo <kjetilk@cpan.org>};
 license  'perl';
 
-build_requires 'Test::More';
+test_requires 'Test::More';
+requires 'RDF::Trine'			=> 0.125;
+requires 'Scalar::Util'			=> 0;
+requires 'namespace::autoclean'         => 0;
 
-auto_install;
+requires 'Moose'			=> 0;
+
+auto_set_repository;
+auto_set_bugtracker;
+
+write_doap_changes;
+
+sign;
 
 WriteAll;
 
