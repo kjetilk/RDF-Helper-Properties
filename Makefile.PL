@@ -7,6 +7,8 @@ author   q{Kjetil Kjernsmo <kjetilk@cpan.org>};
 license  'perl';
 
 test_requires 'Test::More';
+test_requires 'FindBin';
+
 requires 'RDF::Trine'			=> 0.125;
 requires 'Scalar::Util'			=> 0;
 requires 'namespace::autoclean'         => 0;
