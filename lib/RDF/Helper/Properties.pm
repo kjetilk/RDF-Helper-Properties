@@ -13,6 +13,7 @@ use Moose; # Uhm, well, this should probably also be a role at some point...
 use Error qw(:try);
 
 
+
 =head1 NAME
 
 RDF::Helper::Properties - Module that provides shortcuts to retrieve certain information
@@ -265,7 +266,10 @@ sub _escape {
 
 =head1 AUTHOR
 
-Most of the code was written by Gregory Todd Williams C<< <gwilliams@cpan.org> >> for L<RDF::LinkedData::Apache>, but refactored into this class for use by other modules by Kjetil Kjernsmo, C<< <kjetilk at cpan.org> >>
+Most of the code was written by Gregory Todd Williams C<<
+<gwilliams@cpan.org> >> for L<RDF::LinkedData::Apache>, but refactored
+into this class for use by other modules by Kjetil Kjernsmo, C<<
+<kjetilk at cpan.org> >>
 
 =head1 COPYRIGHT & LICENSE
 
