@@ -15,6 +15,8 @@ requires 'namespace::autoclean'         => 0;
 
 requires 'Moose'			=> 0;
 
+author_tests('xt');
+
 auto_set_repository;
 auto_set_bugtracker;
 
