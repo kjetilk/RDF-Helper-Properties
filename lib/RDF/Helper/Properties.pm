@@ -263,6 +263,9 @@ sub _escape {
 	return $l;
 }
 
+=item with_role
+
+Is there just because of quirk in L<Error>, don't worry about it.
 
 =back
 

@@ -3,7 +3,7 @@ NAME
     certain information
 
 VERSION
-    Version 0.08
+    Version 0.10
 
 SYNOPSIS
         my $pred = RDF::Helper::Properties->new($model);
@@ -30,6 +30,9 @@ METHODS
 
     "html_node_value"
         Formats the nodes for HTML output.
+
+    with_role
+        Is there just because of quirk in Error, don't worry about it.
 
 AUTHOR
     Most of the code was written by Gregory Todd Williams
