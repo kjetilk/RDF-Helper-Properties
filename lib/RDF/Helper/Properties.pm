@@ -122,6 +122,11 @@ sub title {
 			iri( 'http://xmlns.com/foaf/0.1/name' ),
 			iri( 'http://purl.org/dc/terms/title' ),
 			iri( 'http://purl.org/dc/elements/1.1/title' ),
+			iri( 'http://www.w3.org/2004/02/skos/core#prefLabel' ),
+			iri( 'http://www.geonames.org/ontology#officialName' ),
+			iri( 'http://www.geonames.org/ontology#name' ),
+			iri( 'http://purl.org/vocabularies/getty/vp/labelPreferred' ),
+			iri( 'http://opengraphprotocol.org/schema/title' ),
 			iri( 'http://www.w3.org/2000/01/rdf-schema#label' ),
 		);
 		
