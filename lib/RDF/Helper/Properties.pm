@@ -1,266 +1,235 @@
 package RDF::Helper::Properties;
 
-use warnings;
-use strict;
-
-use RDF::Trine;
-use RDF::Trine qw(iri variable statement);
-
-use Scalar::Util qw(blessed);
-
 # Uhm, well, this should probably also be a role at some point...
 
-# Next line is a workaround to problem documented in Error.pm#COMPATIBILITY
+use Any::Moose;
+use RDF::Trine qw(iri variable statement);
+use namespace::autoclean -also => [qw/cached/];
 
-BEGIN { require Moose; Moose->import; *with_role = *with; undef *with };
-use Error qw(:try);
+our $VERSION = '0.20';
 
-
-
-=head1 NAME
-
-RDF::Helper::Properties - Module that provides shortcuts to retrieve certain information
-
-=head1 VERSION
-
-Version 0.10
-
-=cut
-
-our $VERSION = '0.10';
-
-
-=head1 SYNOPSIS
-
-    my $pred = RDF::Helper::Properties->new($model);
-    print $pred->title
-
-
-=head1 METHODS
-
-=over
-
-=item C<< new ( model => $model ) >>
-
-Constructor for getting predicates from a model, which is passed to the constructor.
-
-
-=item C<< model >>
-
-Will return the current model.
-
-=cut
-
-
-has model => (is => 'ro', required => 1, isa => 'RDF::Trine::Model');
-
-
-has _cache => (is => 'rw', default => sub { {
-			title	=> {
-				'<http://www.w3.org/2000/01/rdf-schema#label>'	=> 'label',
-				'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'	=> 'type',
-			},
-			pred	=> {
-				'<http://www.w3.org/2000/01/rdf-schema#label>'	=> 'label',
-				'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'	=> 'type',
-				'<http://purl.org/dc/elements/1.1/type>' => 'Type',
-			},
-		} }
+has model => (
+	is         => 'ro',
+	isa        => 'RDF::Trine::Model',
+	required   => 1,
 );
-	
-#	foreach (1 .. 50) {
-#		$self->{_cache}{pred}{"<http://www.w3.org/1999/02/22-rdf-syntax-ns#_$_>"}	= "#$_";
-#	}
 
+has [qw/ page_properties title_properties /] => (
+	is         => 'ro',
+	isa        => 'ArrayRef[RDF::Trine::Node::Resource]',
+	lazy_build => 1,
+);
 
-=item C<< page ( $node ) >>
+use constant {
+	_build_page_properties => [
+		iri( 'http://xmlns.com/foaf/0.1/homepage' ),
+		iri( 'http://xmlns.com/foaf/0.1/page' ),
+	],
+	_build_title_properties => [
+		iri( 'http://xmlns.com/foaf/0.1/name' ),
+		iri( 'http://purl.org/dc/terms/title' ),
+		iri( 'http://purl.org/dc/elements/1.1/title' ),
+		iri( 'http://www.w3.org/2004/02/skos/core#prefLabel' ),
+		iri( 'http://www.geonames.org/ontology#officialName' ),
+		iri( 'http://www.geonames.org/ontology#name' ),
+		iri( 'http://purl.org/vocabularies/getty/vp/labelPreferred' ),
+		iri( 'http://opengraphprotocol.org/schema/title' ),
+		iri( 'http://www.w3.org/2000/01/rdf-schema#label' ),
+		# doap ?
+	],
+};
 
-A suitable page to redirect to, based on foaf:page or foaf:homepage
+has cache => (
+	is         => 'rw',
+	isa        => 'HashRef | Object',
+	lazy_build => 1,
+);
 
-=cut
-
-sub page {
-    my $self	= shift;
-    my $node	= shift;
-    throw Error -text => "Node argument needs to be a RDF::Trine::Node::Resource." unless ($node && $node->isa('RDF::Trine::Node::Resource'));
-
-    my $model	= $self->model;
-
-    my @props	= (
-                   iri( 'http://xmlns.com/foaf/0.1/homepage' ),
-                   iri( 'http://xmlns.com/foaf/0.1/page' ),
-                  );
-
-    # optimistically assume that we'll get back a valid page on the first try
-    my $objects	= $model->objects_for_predicate_list( $node, @props );
-    if (blessed($objects) && $objects->is_resource) {
-        return $objects->uri_value;
-    }
-
-    # Return the common link to ourselves
-    return $node->uri_value . '/page';
+sub _build_cache
+{
+	+{
+		title => {
+			'<http://www.w3.org/2000/01/rdf-schema#label>'       => 'label',
+			'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'  => 'type',
+		},
+		pred => {
+			'<http://www.w3.org/2000/01/rdf-schema#label>'       => 'label',
+			'<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>'  => 'type',
+			'<http://purl.org/dc/elements/1.1/type>'             => 'Type',
+		},
+	};
 }
 
+sub _cache_set
+{
+	my ($self, $type, $uri, $value) = @_;
+	my $cache = $self->cache;
+	if (blessed $cache)
+		{ $cache->set("$type$uri" => $value) }
+	else
+		{ $cache->{$type}{$uri} = $value }
+	return $value;
+}
 
-=item C<< title ( $node ) >>
+sub _cache_get
+{
+	my ($self, $type, $uri) = @_;
+	my $cache = $self->cache;
+	if (blessed $cache)
+		{ return $cache->get("$type$uri") }
+	else
+		{ return $cache->{$type}{$uri} }
+}
 
-A suitable title for the document will be returned, based on document contents
-
-=cut
-
-sub title {
-	my $self	= shift;
-	my $node	= shift;
-	my $nodestr	= $node->as_string;
-
-	if (my $title = $self->_cache->{title}{$nodestr}) {
-		return $title;
-	} else {
-		my $model	= $self->model;
-
-		my @label	= (
-			iri( 'http://xmlns.com/foaf/0.1/name' ),
-			iri( 'http://purl.org/dc/terms/title' ),
-			iri( 'http://purl.org/dc/elements/1.1/title' ),
-			iri( 'http://www.w3.org/2004/02/skos/core#prefLabel' ),
-			iri( 'http://www.geonames.org/ontology#officialName' ),
-			iri( 'http://www.geonames.org/ontology#name' ),
-			iri( 'http://purl.org/vocabularies/getty/vp/labelPreferred' ),
-			iri( 'http://opengraphprotocol.org/schema/title' ),
-			iri( 'http://www.w3.org/2000/01/rdf-schema#label' ),
-		);
-		
-		{
-			# optimistically assume that we'll get back a valid name on the first try
-			my $name	= $model->objects_for_predicate_list( $node, @label );
-			if (blessed($name) and $name->is_literal) {
-				my $str	= $name->literal_value;
-				$self->_cache->{title}{$nodestr}	= $str;
-				return $str;
-			}
-		}
-		
-		# if that didn't work, continue to try to find a valid literal title node
-		my @names	= $model->objects_for_predicate_list( $node, @label );
-		foreach my $name (@names) {
-			if ($name->is_literal) {
-				my $str	= $name->literal_value;
-				$self->_cache->{title}{$nodestr}	= $str;
-				return $str;
-			}
-		}
-		
-		# and finally fall back on just returning a string version of the node
-		if ($node->is_resource) {
-			my $uri	= $node->uri_value;
-			$self->_cache->{title}{$nodestr}	= $uri;
-			return $uri;
-		} else {
-			my $str	= $node->as_string;
-			$self->_cache->{title}{$nodestr}	= $str;
-			return $str;
-		}
+# Helper function, cleaned away by namespace::autoclean
+sub cached
+{
+	my ($method_name, $coderef) = @_;
+	no strict 'refs';
+	*{$method_name} = sub
+	{
+		my ($self, $node) = @_;
+		my $cached = $self->_cache_get($method_name, $node);
+		return $cached if defined $cached;
+		$self->_cache_set($method_name, $node, $self->$coderef($node));
 	}
 }
 
-=item C<< description ( $node ) >>
-
-A suitable description for the document will be returned, based on document contents
-
-=cut
-
-
-sub description {
-	my $self	= shift;
-	my $node	= shift;
-	my $model	= $self->model;
+cached page => sub
+{
+	my ($self, $node) = @_;
 	
-	my $iter	= $model->get_statements( $node );
-	my @label	= (
-					iri( 'http://www.w3.org/2000/01/rdf-schema#label' ),
-#					iri( 'http://purl.org/dc/elements/1.1/description' ),
-				);
+	confess "Node argument needs to be a RDF::Trine::Node::Resource."
+		unless $node && $node->isa('RDF::Trine::Node::Resource');
+	
+	my @props = @{ $self->page_properties };
+	
+	my ($object) =
+		grep { blessed $_ and $_->is_resource }
+		scalar $self->model->objects_for_predicate_list($node, @props);
+	($object) =
+		grep { blessed $_ and $_->is_resource }
+		$self->model->objects_for_predicate_list($node, @props)
+		unless $object;
+	
+	return $object->uri_value if $object;
+	
+	# Return the common link to ourselves
+	return $node->uri_value . '/page';
+};
+
+cached title => sub
+{
+	my ($self, $node) = @_;
+	
+	my @props = @{ $self->title_properties };
+	
+	my ($object) =
+		grep { blessed $_ and $_->is_literal }
+		scalar $self->model->objects_for_predicate_list($node, @props);
+	($object) =
+		grep { blessed $_ and $_->is_literal }
+		$self->model->objects_for_predicate_list($node, @props)
+		unless $object;
+	
+	return $object->literal_value if $object;
+	
+	# and finally fall back on just returning a string version of the node
+	return $node->is_resource ? $node->uri_value : $node->as_string;
+};
+
+cached description => sub
+{
+	my ($self, $node) = @_;
+	my $model = $self->model;
+	
+	my $iter  = $model->get_statements( $node );
+	my @label = @{ $self->title_properties };
+	
 	my @desc;
-	while (my $st = $iter->next) {
-		my $p	= $st->predicate;
-		
+	while (my $st = $iter->next)
+	{
+		my $p = $st->predicate;
 		my $ps;
-		if (my $pname = $self->_cache->{pred}{$p->as_string}) {
-			$ps	= $pname;
-		} elsif (my $pn = $model->objects_for_predicate_list( $p, @label )) {
-			$ps	= $self->html_node_value( $pn );
-		} elsif ($p->is_resource and $p->uri_value =~ m<^http://www.w3.org/1999/02/22-rdf-syntax-ns#_(\d+)$>) {
-			$ps	= '#' . $1;
-		} else {
+		
+		if ($ps = $self->_cache_get(pred => $p))
+			{ 1 }
+		
+		elsif (my $pname = $model->objects_for_predicate_list($p, @label))
+			{ $ps = $self->html_node_value( $pname ) }
+		
+		elsif ($p->is_resource and $p->uri_value =~ m<^http://www.w3.org/1999/02/22-rdf-syntax-ns#_(\d+)$>)
+			{ $ps = '#' . $1 }
+		
+		else
+		{
 			# try to turn the predicate into a qname and use the local part as the printable name
 			my $name;
-			try {
-				(my $ns, $name)	= $p->qname;
-			} catch RDF::Trine::Error with {};
-			if ($name) {
-				my $title	= _escape( $name );
-				$ps	= $title;
-			} else {
-				$ps	= _escape( $p->uri_value );
-			}
+			eval {
+				(undef, $name) = $p->qname;
+			};
+			$ps = _escape( $name || $p->uri_value );
 		}
 		
-		$self->_cache->{pred}{$p->as_string}	= $ps;
-		my $obj	= $st->object;
-		my $os	= $self->html_node_value( $obj, $p );
+		$self->_cache_set(pred => $p, $ps);
+		my $obj = $st->object;
+		my $os  = $self->html_node_value( $obj, $p );
 		
 		push(@desc, [$ps, $os]);
 	}
+	
 	return \@desc;
-}
+};
 
-
-
-=item C<< html_node_value >>
-
-Formats the nodes for HTML output.
-
-=cut
-
-
-sub html_node_value {
-	my $self		= shift;
-	my $n			= shift;
-	my $rdfapred	= shift;
-	my $qname		= '';
-	my $xmlns		= '';
-	if ($rdfapred) {
-		try {
-			my ($ns, $ln)	= $rdfapred->qname;
-			$xmlns	= qq[xmlns:ns="${ns}"];
-			$qname	= qq[ns:$ln];
-		} catch RDF::Trine::Error with {};
+sub html_node_value
+{
+	my $self       = shift;
+	my $n          = shift;
+	my $rdfapred   = shift;
+	my $qname      = '';
+	my $xmlns      = '';
+	
+	if ($rdfapred)
+	{
+		eval {
+			my ($ns, $ln) = $rdfapred->qname;
+			$xmlns        = qq[xmlns:ns="${ns}"];
+			$qname        = qq[ns:$ln];
+		};
 	}
-	return '' unless (blessed($n));
-	if ($n->is_literal) {
-		my $l	= _escape( $n->literal_value );
-		if ($qname) {
-			return qq[<span $xmlns property="${qname}">$l</span>];
-		} else {
-			return $l;
-		}
-	} elsif ($n->is_resource) {
-		my $uri		= _escape( $n->uri_value );
-		my $title	= _escape( $self->title( $n ) );
+	
+	return '' unless blessed $n;
+	
+	if ($n->is_literal)
+	{
+		my $l = _escape( $n->literal_value );
 		
-		if ($qname) {
-			return qq[<a $xmlns rel="${qname}" href="${uri}">$title</a>];
-		} else {
-			return qq[<a href="${uri}">$title</a>];
-		}
-	} else {
+		return $qname
+			? qq[<span $xmlns property="${qname}">$l</span>]
+			: $l;
+	}
+	
+	elsif ($n->is_resource)
+	{
+		my $uri    = _escape( $n->uri_value );
+		my $title  = _escape( $self->title($n) );
+		
+		return $qname
+			? qq[<a $xmlns rel="${qname}" href="${uri}">$title</a>]
+			: qq[<a href="${uri}">$title</a>];
+	}
+	
+	else
+	{
 		return $n->as_string;
 	}
 }
 
-sub _escape {
-	my $l	= shift;
-	for ($l) {
+sub _escape
+{
+	my $l = shift;
+	for ($l)
+	{
 		s/&/&amp;/g;
 		s/</&lt;/g;
 		s/"/&quot;/g;
@@ -268,28 +237,107 @@ sub _escape {
 	return $l;
 }
 
-=item with_role
+__PACKAGE__->meta->make_immutable || 1;
+__END__
 
-Is there just because of quirk in L<Error>, don't worry about it.
+=head1 NAME
+
+RDF::Helper::Properties - Module that provides shortcuts to retrieve certain information
+
+=head1 VERSION
+
+Version 0.20
+
+=head1 SYNOPSIS
+
+ my $helper = RDF::Helper::Properties->new($model);
+ print $helper->title($node);
+
+=head1 DESCRIPTION
+
+=head2 Constructor
+
+=over
+
+=item C<< new(model => $model, %attributes) >>
+
+Moose-style constructor.
 
 =back
 
+=head2 Attributes
+
+=over
+
+=item C<< model >>
+
+The RDF::Trine::Model which data will be extracted from. The only attribute
+which the constructor requires.
+
+=item C<< page_properties >>
+
+An arrayref of RDF::Trine::Node::Resource objects, each of which are
+taken to mean "something a bit like foaf:homepage". There is a sensible
+default.
+
+=item C<< title_properties >>
+
+An arrayref of RDF::Trine::Node::Resource objects, each of which are
+taken to mean "something a bit like foaf:name". There is a sensible
+default.
+
+=item C<< cache >>
+
+A hashref for caching data into, or a blessed object which supports C<get>
+and C<set> methods compatible with L<CHI> and L<Cache::Cache>. If you do not
+supply a cache, then a hashref will be used by default.
+
+=back
+
+=head2 Methods
+
+=over
+
+=item C<< page($node) >>
+
+A suitable page to redirect to, based on foaf:page or foaf:homepage
+
+=item C<< title($node) >>
+
+A suitable title for the document will be returned, based on document contents
+
+=item C<< description($node) >>
+
+A suitable description for the document will be returned, based on document contents
+
+=item C<< html_node_value($node) >>
+
+Formats the nodes for HTML output.
+
+=back
+
+=begin private
+
+=item C<< cached($subname, $coderef) >>
+
+Install a cached version of a sub.
+
+=end private
 
 =head1 AUTHOR
 
 Most of the code was written by Gregory Todd Williams C<<
 <gwilliams@cpan.org> >> for L<RDF::LinkedData::Apache>, but refactored
 into this class for use by other modules by Kjetil Kjernsmo, C<<
-<kjetilk at cpan.org> >>
+<kjetilk at cpan.org> >>, then refactored again by Toby Inkster,
+C<< <tobyink at cpan.org> >>.
 
 =head1 COPYRIGHT & LICENSE
 
 Copyright 2010 Gregory Todd Williams and ABC Startsiden AS.
 
+Copyright 2012 Toby Inkster.
+
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-
-=cut
-
-1;
