@@ -10,7 +10,7 @@ test_requires 'Test::More';
 test_requires 'FindBin';
 
 requires 'Any::Moose'            => 0;
-requires 'namespace::autoclean'  => 0.19;
+requires 'namespace::autoclean'  => 0.13;
 requires 'RDF::Trine'            => 0.135;
 
 recommends 'CHI';
