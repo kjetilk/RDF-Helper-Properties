@@ -9,12 +9,13 @@ license     'perl';
 test_requires 'Test::More';
 test_requires 'FindBin';
 
-requires 'Moose'                 => 0;
+requires 'Any::Moose'            => 0;
 requires 'namespace::autoclean'  => 0.19;
 requires 'RDF::Trine'            => 0.135;
 requires 'Throwable::Error'      => 0;
 
 recommends 'CHI';
+recommends 'Moose';
 
 author_tests('xt');
 

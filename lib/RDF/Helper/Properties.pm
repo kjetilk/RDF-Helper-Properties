@@ -2,7 +2,7 @@ package RDF::Helper::Properties;
 
 # Uhm, well, this should probably also be a role at some point...
 
-use Moose;
+use Any::Moose;
 use RDF::Trine qw(iri variable statement);
 use Throwable::Error;
 use namespace::autoclean -also => [qw/cached/];
