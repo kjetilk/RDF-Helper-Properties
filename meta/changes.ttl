@@ -20,7 +20,9 @@ my:project
     :programming-language "Perl" ;
     :maintainer <http://www.kjetil.kjernsmo.net/foaf#me> ;
     :developer <http://kasei.us/about/foaf.xrdf#greg> ;
+    :developer <http://tobyinkster.co.uk/#i> ;
     :bug-database <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=RDF-Helper-Properties> ;
+    :release    my:v_0_20 ;
     :release    my:v_0_10 ;
     :release    my:v_0_08 .
 
@@ -35,6 +37,26 @@ my:project
     owl:sameAs  <http://purl.org/NET/cpan-uri/person/gwilliams> ;
     foaf:name   "Gregory Todd Williams" ;
     foaf:mbox   <mailto:gwilliams@cpan.org> .
+
+<http://tobyinkster.co.uk/#i>
+    a           foaf:Person ;
+    owl:sameAs  <http://purl.org/NET/cpan-uri/person/tobyink> ;
+    foaf:name   "Toby Inkster" ;
+    foaf:mbox   <mailto:tobyink@cpan.org> .
+
+my:v_0_20
+    a           :Version ;
+    dc:issued   "2012-08-26"^^xsd:date ;
+    rdfs:label  "Refactoring"@en ;
+    :revision   "0.20"^^xsd:string ;
+    dc:contributor <http://tobyinkster.co.uk/#i> ;
+    dcs:changeset [
+      dcs:item [ rdfs:label "Drop dependency on deprecated Error.pm; use Carp::confess instead."@en ; a dcs:Update ] ;
+      dcs:item [ rdfs:label "Expose 'cache' attribute publicly, and allow it to accept CHI/Cache::Cache objects."@en ] ;
+      dcs:item [ rdfs:label "'page_properties' and 'title_properties' attributes allow list of properties understood to be customized."@en ; a dcs:Addition ] ;
+      dcs:item [ rdfs:label "Refactored module."@en ] ;
+      dcs:item [ rdfs:label "use Any::Moose"@en ] ;
+    ] .
 
 my:v_0_10
     a           :Version ;
