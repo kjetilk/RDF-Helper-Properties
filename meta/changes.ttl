@@ -51,10 +51,11 @@ my:v_0_20
     :revision   "0.20"^^xsd:string ;
     dc:contributor <http://tobyinkster.co.uk/#i> ;
     dcs:changeset [
-      dcs:item [ rdfs:label "Switch from Error.pm to Throwable::Error."@en ; a dcs:Update ] ;
+      dcs:item [ rdfs:label "Drop dependency on deprecated Error.pm; use Carp::confess instead."@en ; a dcs:Update ] ;
       dcs:item [ rdfs:label "Expose 'cache' attribute publicly, and allow it to accept CHI/Cache::Cache objects."@en ] ;
       dcs:item [ rdfs:label "'page_properties' and 'title_properties' attributes allow list of properties understood to be customized."@en ; a dcs:Addition ] ;
       dcs:item [ rdfs:label "Refactored module."@en ] ;
+      dcs:item [ rdfs:label "use Any::Moose"@en ] ;
     ] .
 
 my:v_0_10
