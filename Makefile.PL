@@ -12,7 +12,6 @@ test_requires 'FindBin';
 requires 'Any::Moose'            => 0;
 requires 'namespace::autoclean'  => 0.19;
 requires 'RDF::Trine'            => 0.135;
-requires 'Throwable::Error'      => 0;
 
 recommends 'CHI';
 recommends 'Moose';

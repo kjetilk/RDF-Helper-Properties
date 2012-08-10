@@ -4,7 +4,6 @@ package RDF::Helper::Properties;
 
 use Any::Moose;
 use RDF::Trine qw(iri variable statement);
-use Throwable::Error;
 use namespace::autoclean -also => [qw/cached/];
 
 our $VERSION = '0.20';
@@ -100,9 +99,8 @@ cached page => sub
 {
 	my ($self, $node) = @_;
 	
-	Throwable::Error->throw(
-		message => "Node argument needs to be a RDF::Trine::Node::Resource.",
-	) unless $node && $node->isa('RDF::Trine::Node::Resource');
+	confess "Node argument needs to be a RDF::Trine::Node::Resource."
+		unless $node && $node->isa('RDF::Trine::Node::Resource');
 	
 	my @props = @{ $self->page_properties };
 	
