@@ -89,9 +89,28 @@ sub cached
 	*{$method_name} = sub
 	{
 		my ($self, $node) = @_;
-		my $cached = $self->_cache_get($method_name, $node);
-		return $cached if defined $cached;
-		$self->_cache_set($method_name, $node, $self->$coderef($node));
+		my $return = $self->_cache_get($method_name, $node)
+			|| $self->_cache_set($method_name, $node, $self->$coderef($node));
+		
+		if (blessed $return and $return->isa('RDF::Trine::Node'))
+		{
+			if ($return->is_literal)
+			{
+				return wantarray
+					? ($return->literal_value, $return->literal_value_language, $return->literal_datatype)
+					: $return->literal_value;
+			}
+			elsif ($return->is_resource)
+			{
+				return $return->uri_value;
+			}
+			else
+			{
+				return $return->as_string;
+			}
+		}
+		
+		return $return;
 	}
 }
 
@@ -112,10 +131,10 @@ cached page => sub
 		$self->model->objects_for_predicate_list($node, @props)
 		unless $object;
 	
-	return $object->uri_value if $object;
+	return $object if $object;
 	
 	# Return the common link to ourselves
-	return $node->uri_value . '/page';
+	return iri($node->uri_value . '/page');
 };
 
 cached title => sub
@@ -132,10 +151,10 @@ cached title => sub
 		$self->model->objects_for_predicate_list($node, @props)
 		unless $object;
 	
-	return $object->literal_value if $object;
+	return $object if $object;
 	
-	# and finally fall back on just returning a string version of the node
-	return $node->is_resource ? $node->uri_value : $node->as_string;
+	# and finally fall back on just returning the node
+	return $node;
 };
 
 cached description => sub
@@ -300,11 +319,13 @@ supply a cache, then a hashref will be used by default.
 
 =item C<< page($node) >>
 
-A suitable page to redirect to, based on foaf:page or foaf:homepage
+A suitable page to redirect to, based on foaf:page or foaf:homepage.
 
 =item C<< title($node) >>
 
-A suitable title for the document will be returned, based on document contents
+A suitable title for the document will be returned, based on document contents.
+
+Called in list context, returns a ($value, $lang, $datatype) tuple.
 
 =item C<< description($node) >>
 

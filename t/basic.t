@@ -3,7 +3,7 @@
 use FindBin qw($Bin);
 
 use strict;
-use Test::More tests => 7;
+use Test::More tests => 8;
 
 #use Test::NoWarnings;
 
@@ -28,6 +28,9 @@ my $node = RDF::Trine::Node::Resource->new('http://localhost:3000/foo');
 my $barnode = RDF::Trine::Node::Resource->new('http://localhost:3000/bar/baz/bing');
 
 is($preds->title($node), 'This is a test', "Correct title");
+
+my @list = $preds->title($node);
+is_deeply(\@list, ['This is a test', 'en', undef], "Correct title (list context)");
 
 is($preds->page($node), 'http://en.wikipedia.org/wiki/Foo', "/foo has a foaf:page at Wikipedia");
 
