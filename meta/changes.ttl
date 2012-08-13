@@ -12,9 +12,17 @@
     dc:subject   my:project ;
     dc:creator   <http://www.kjetil.kjernsmo.net/foaf#me> .
 
+my:project :release    my:v_0_22 .
+my:v_0_22
+    a           :Version ;
+    dc:issued   "2012-08-13"^^xsd:date ;
+    :revision   "0.22"^^xsd:string ;
+    dc:contributor <http://tobyinkster.co.uk/#i> ;
+    dcs:changeset [
+      dcs:item [ rdfs:label "'title' method called in list context now also returns literal datatype and language."@en ; a dcs:Addition ] ;
+    ] .
+
 my:project :release    my:v_0_20 .
-
-
 my:v_0_20
     a           :Version ;
     dc:issued   "2012-08-10"^^xsd:date ;

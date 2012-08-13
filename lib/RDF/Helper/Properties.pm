@@ -6,7 +6,7 @@ use Any::Moose;
 use RDF::Trine qw(iri variable statement);
 use namespace::autoclean -also => [qw/cached/];
 
-our $VERSION = '0.20';
+our $VERSION = '0.22';
 
 has model => (
 	is         => 'ro',
@@ -265,7 +265,7 @@ RDF::Helper::Properties - Module that provides shortcuts to retrieve certain inf
 
 =head1 VERSION
 
-Version 0.20
+Version 0.22
 
 =head1 SYNOPSIS
 
