@@ -6,6 +6,8 @@
 @prefix dcs:  <http://ontologi.es/doap-changeset#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#>.
+@prefix cpan-uri: <http://purl.org/NET/cpan-uri/terms#> .
 
 
 <>
@@ -16,13 +18,22 @@
 my:project	 
     a           :Project ;
     :name       "RDF-Helper-Properties" ;
-    :shortdesc  " Module that provides shortcuts to retrieve certain information from RDF graphs."@en ;
+    :shortdesc  "Module that provides shortcuts to retrieve certain information from RDF graphs."@en ;
     :created    "2010-08-18"^^xsd:date ;
     :programming-language "Perl" ;
     :maintainer <http://www.kjetil.kjernsmo.net/foaf#me> ;
     :developer <http://kasei.us/about/foaf.xrdf#greg> ;
     :developer <http://tobyinkster.co.uk/#i> ;
-    :bug-database <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=RDF-Helper-Properties> ;
-    :release    my:v_0_20 ;
-    :release    my:v_0_10 ;
-    :release    my:v_0_08 .
+    :contributor <http://purl.org/NET/cpan-uri/person/haarg> ;
+    :bug-database <https://github.com/kjetilk/RDF-Helper-Properties/issues> ;
+    :repository [ 
+    		  a :GitRepository ; 
+		  :browse <https://github.com/kjetilk/RDF-Helper-Properties/> ;
+		  prov:has_provenance <http://git2prov.org/git2prov?giturl=https%3A%2F%2Fgithub.com%2Fkjetilk%2FRDF-Helper-Properties&serialization=PROV-O#> 
+		] ;
+    :category   <http://dbpedia.org/resource/Category:Semantic_Web> ;
+    owl:sameAs <http://packages.qa.debian.org/librdf-helper-properties-perl#upstream> ;
+    rdfs:seeAlso <http://packages.qa.debian.org/libr/librdf-helper-properties-perl.ttl> ;
+    cpan-uri:x_IRC <irc://irc.perl.org/#perlrdf> .
+
+<http://dbpedia.org/resource/Category:Semantic_Web> rdfs:label "Semantic Web"@en .
