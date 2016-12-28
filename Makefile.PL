@@ -17,9 +17,9 @@ requires 'RDF::Trine'            => 0.135;
 recommends 'CHI';
 recommends 'Moose';
 
-author_tests('xt');
+#author_tests('xt');
 
-auto_set_repository;
+#auto_set_repository;
 
 resources
   bugtracker    => "https://github.com/kjetilk/RDF-Helper-Properties/issues";
