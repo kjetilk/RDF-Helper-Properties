@@ -9,7 +9,7 @@ use Carp qw(confess);
 use Moo;
 use namespace::autoclean -also => [qw/cached/];
 
-our $VERSION = '0.22';
+our $VERSION = '0.24';
 
 has model => (
 	is         => 'ro',
