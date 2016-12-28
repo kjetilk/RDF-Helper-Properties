@@ -9,7 +9,8 @@ license     'perl';
 test_requires 'Test::More';
 test_requires 'FindBin';
 
-requires 'Any::Moose'            => 0;
+requires 'Moo'                   => 2.000000;
+requires 'Types::Standard'       => 0;
 requires 'namespace::autoclean'  => 0.13;
 requires 'RDF::Trine'            => 0.135;
 

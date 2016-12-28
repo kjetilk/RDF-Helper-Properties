@@ -2,22 +2,26 @@ package RDF::Helper::Properties;
 
 # Uhm, well, this should probably also be a role at some point...
 
-use Any::Moose;
 use RDF::Trine qw(iri variable statement);
+use Types::Standard qw(InstanceOf ArrayRef HashRef Object);
+use Scalar::Util qw(blessed);
+use Carp qw(confess);
+use Moo;
 use namespace::autoclean -also => [qw/cached/];
 
 our $VERSION = '0.22';
 
 has model => (
 	is         => 'ro',
-	isa        => 'RDF::Trine::Model',
+	isa        => InstanceOf['RDF::Trine::Model'],
 	required   => 1,
 );
 
 has [qw/ page_properties title_properties /] => (
-	is         => 'ro',
-	isa        => 'ArrayRef[RDF::Trine::Node::Resource]',
-	lazy_build => 1,
+	is         => 'lazy',
+	isa        => ArrayRef[InstanceOf['RDF::Trine::Node::Resource']],
+	predicate  => 1,
+	clearer    => 1,
 );
 
 use constant {
@@ -41,8 +45,11 @@ use constant {
 
 has cache => (
 	is         => 'rw',
-	isa        => 'HashRef | Object',
-	lazy_build => 1,
+	isa        => HashRef|Object,
+	lazy       => 1,
+	builder    => 1,
+	predicate  => 1,
+	clearer    => 1,
 );
 
 sub _build_cache
